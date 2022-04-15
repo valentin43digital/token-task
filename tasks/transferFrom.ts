@@ -1,6 +1,6 @@
 import { task } from "hardhat/config";
 
-task("approve", "Approves transfer of tokens")
+task("transferFrom", "Transfers tokens from account")
 .addParam("from", "Address of spender")
 .addParam("to", "Address of spender")
 .addParam("amount", "Amount to transfer")
