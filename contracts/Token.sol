@@ -37,7 +37,7 @@ contract Token {
     }
 
     function transfer(address _to, uint256 _value) public returns (bool success){
-        require(_balances[msg.sender] < _value, "Not enough balance");
+        require(_balances[msg.sender] > _value, "Not enough balance");
         _balances[msg.sender] -= _value;
         _balances[_to] += _value;
         emit Transfer(msg.sender, _to, _value);
@@ -45,7 +45,7 @@ contract Token {
     }
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success){
-        require(_value > _balances[_from], "Not enough balance");
+        require(_balances[_from] > _value, "Not enough balance");
         _balances[_from] -= _value;
         _balances[_to] += _value;
         emit Transfer(_from, _to, _value);
@@ -53,14 +53,14 @@ contract Token {
     }
     
     function approve(address _spender, uint256 _value) public returns (bool success){
-        require(_balances[msg.sender] < _value, "Not enough balance");
+        require(_balances[msg.sender] > _value, "Not enough balance");
         _allowances[msg.sender][_spender] += _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
     function burn(address account, uint256 amount) public ownerOnly {
-        require(amount > _balances[account], "Not enough balance");
+        require(_balances[account] > amount, "Not enough balance");
         _totalSupply -= amount;
         _balances[account] -= amount;
         emit Transfer(account, address(0), amount);

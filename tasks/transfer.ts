@@ -1,11 +1,11 @@
 import { task } from "hardhat/config";
+import configts from "../config"
 
 task("transfer", "Transfers tokens to address")
 .addParam("address", "Address to transfer to")
 .addParam("amount", "Amount to transfer")
 .setAction(async (taskArgs, { ethers }) => {
-  const Token = await ethers.getContractFactory("Token");
-  const token = await Token.attach("0x691d3E4bDD74fFb40E81cF070d4004Dd1CaCCD9F");
+  const token = await ethers.getContractAt("Token", configts.CONTRACT_ADDRESS)
   await token.transfer(taskArgs.address, taskArgs.amount)
 });
 

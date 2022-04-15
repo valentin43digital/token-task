@@ -4,6 +4,7 @@ import { BigNumber, Contract } from "ethers";
 import { ethers } from "hardhat";
 import { Token } from "../typechain";
 import config from "../hardhat.config";
+import configts from "../config"
 
 const {isCallTrace} = require("hardhat/internal/hardhat-network/stack-traces/message-trace")
 
@@ -12,15 +13,12 @@ describe("Token contract", function () {
   let addr1: SignerWithAddress;
   let addr2: SignerWithAddress;
   let token: Contract;
-  const name = "Token name";
-  const symbol = "TKN";
-  const decimals = 18;
-  //const totalSupply = 10000000000000;
-  const amount1 = ethers.utils.parseUnits("100.0", 18);
-  const amount2 = 2000000000000;
-  const totalSupply = ethers.utils.parseUnits("1000000.0", 18);
-  //const amount1 = ethers.utils.parseUnits("100.0", 18);
-  //const amount2 = ethers.utils.parseUnits("200.0", 18);
+  const name = configts.name;
+  const symbol = configts.symbol;
+  const decimals = configts.decimals;
+  const amount1 = ethers.utils.parseUnits(configts.amount1, decimals);
+  const amount2 = ethers.utils.parseUnits(configts.amount2, decimals);;
+  const totalSupply = ethers.utils.parseUnits(configts.totalSupply, decimals);
 
   beforeEach(async function(){
     [owner, addr1, addr2] = await ethers.getSigners();
@@ -44,7 +42,8 @@ describe("Token contract", function () {
       expect(await token._symbol()).to.equal(symbol);
     })
     it("should set the right decimals", async function () {
-      expect(await token._decimals()).to.equal(decimals);
+      console.log(await token._decimals());
+      expect(await token._decimals()).to.equal(parseInt(decimals));
     })
     it("should set the right total supply", async function () {
       expect(await token._totalSupply()).to.equal(totalSupply);
@@ -60,68 +59,56 @@ describe("Token contract", function () {
   describe("Transfers", function() {
     it("should be possible to transfer tokens", async function () {
       let balance = await token.connect(owner).balanceOf(owner.address);
-      console.log(balance);
-      console.log(amount1);
       await token.connect(owner).transfer(addr1.address, amount1);
-      //expect(await token.connect(addr1).balanceOf(addr1.address)).to.equal(amount1);
-      //expect(await token.connect(owner).balanceOf(owner.address)).to.equal(balance-parseUnits("1.0", 18););
+      expect(await token.connect(addr1).balanceOf(addr1.address)).to.equal(amount1);
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(balance.sub(amount1));
     })
-  //   it("should be impossible to transfer tokens when balance is lower than amount", async function () {
-  //     let amount = 120;
-  //     await expect(token.connect(addr1).transfer(addr2.address, amount)).to.be.revertedWith("Not enough balance");
-  //   })
-  //   it("should be possible to approve transfer", async function () {
-  //     let amount = 120;
-  //     await token.connect(owner).approve(addr1.address, amount);
-  //     expect(await token.connect(addr1).allowance(owner.address, addr1.address)).to.equal(amount);
-  //     //expect(await token.connect(owner).approve(addr1.address, amount)).to.be.true;
-  //   })
-  //   it("should be impossible to approve transfer for balance lower than amount", async function () {
-  //     let amount = 120;
-  //     await expect(token.connect(addr1).approve(addr2.address, amount)).to.be.revertedWith("Not enough balance");
-  //   })
-  //   it("should be possible to transfer from account after approve", async function () {
-  //     let amount = 120;
-  //     let balance = await token.connect(owner).balanceOf(owner.address);
-  //     await token.connect(owner).approve(addr1.address, amount);
-  //     await token.connect(addr1).transferFrom(owner.address, addr1.address, amount)
-  //     expect(await token.connect(addr1).balanceOf(addr1.address)).to.equal(amount);
-  //     expect(await token.connect(owner).balanceOf(owner.address)).to.equal(balance-amount);
-  //   })
-  //   it("should be impossible to transfer from account after approve when allowance is lower than amount", async function () {
-  //     let amount1 = 120;
-  //     let amount2 = 250;
-  //     await token.connect(owner).approve(addr1.address, amount1);
-  //     await expect(token.connect(addr1).transferFrom(owner.address, addr1.address, amount2)).to.be.revertedWith("Not enough allowance")
-  //   })
+    it("should be impossible to transfer tokens when balance is lower than amount", async function () {
+      await expect(token.connect(addr1).transfer(addr2.address, amount1)).to.be.revertedWith("Not enough balance");
+    })
+    it("should be possible to approve transfer", async function () {
+      await token.connect(owner).approve(addr1.address, amount1);
+      expect(await token.connect(addr1).allowance(owner.address, addr1.address)).to.equal(amount1);
+    })
+    it("should be impossible to approve transfer for balance lower than amount", async function () {
+      await expect(token.connect(addr1).approve(addr2.address, amount1)).to.be.revertedWith("Not enough balance");
+    })
+    it("should be possible to transfer from account after approve", async function () {
+      let balance = await token.connect(owner).balanceOf(owner.address);
+      await token.connect(owner).approve(addr1.address, amount1);
+      await token.connect(addr1).transferFrom(owner.address, addr1.address, amount1)
+      expect(await token.connect(addr1).balanceOf(addr1.address)).to.equal(amount1);
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(balance.sub(amount1));
+    })
+    it("should be impossible to transfer from account when balance lower amount", async function () {
+      let balance = await token.connect(owner).balanceOf(owner.address);
+      await token.connect(owner).approve(addr1.address, amount1);
+      await expect(token.connect(addr1).transferFrom(owner.address, addr1.address, amount2)).to.be.revertedWith("Not enough balance");
+    })
   })
 
-  // describe("Burn and mint", function() {
-  //   it("should be possible for owner to burn tokens", async function () {
-  //     let amount = 120;
-  //     expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply);
-  //     await token.connect(owner).burn(owner.address, amount);
-  //     expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply-amount);
-  //   })
-  //   it("should be impossible for non owner to burn tokens", async function () {
-  //     let amount = 120;
-  //     await expect(token.connect(addr1).burn(addr1.address, amount)).to.be.revertedWith("You are not owner");
-  //   })
-  //   it("should be impossible for owner to burn tokens more than balance", async function () {
-  //     let balance = await token.connect(owner).balanceOf(owner.address);
-  //     let amount = balance+120;
-  //     await expect(token.connect(owner).burn(owner.address, amount)).to.be.revertedWith("Not enough balance");
-  //   })
-  //   it("should be possible for owner to mint tokens", async function () {
-  //     let amount = 120;
-  //     expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply);
-  //     await token.connect(owner).mint(owner.address, amount);
-  //     expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply+amount);
-  //   })
-  //   it("should be impossible for non owner to mint tokens", async function () {
-  //     let amount = 120;
-  //     await expect(token.connect(addr1).mint(addr1.address, amount)).to.be.revertedWith("You are not owner");
-  //   })
-  // })
+  describe("Burn and mint", function() {
+    it("should be possible for owner to burn tokens", async function () {
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply);
+      await token.connect(owner).burn(owner.address, amount1);
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply.sub(amount1));
+    })
+    it("should be impossible for non owner to burn tokens", async function () {
+      await expect(token.connect(addr1).burn(addr1.address, amount1)).to.be.revertedWith("You are not owner");
+    })
+    it("should be impossible for owner to burn tokens more than balance", async function () {
+      let balance = await token.connect(owner).balanceOf(owner.address);
+      let amount = balance.add(amount1);
+      await expect(token.connect(owner).burn(owner.address, amount)).to.be.revertedWith("Not enough balance");
+    })
+    it("should be possible for owner to mint tokens", async function () {
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply);
+      await token.connect(owner).mint(owner.address, amount1);
+      expect(await token.connect(owner).balanceOf(owner.address)).to.equal(totalSupply.add(amount1));
+    })
+    it("should be impossible for non owner to mint tokens", async function () {
+      await expect(token.connect(addr1).mint(addr1.address, amount1)).to.be.revertedWith("You are not owner");
+    })
+  })
 });
   
