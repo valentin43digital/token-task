@@ -35,5 +35,26 @@
     "typechain": "^5.2.0",
     "typescript": "^4.6.3",
     "web3": "^1.7.3"
-  }
+  },
+  "name": "token-task",
+  "description": "Creating ERC20 token",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valentin43digital/token-task.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/valentin43digital/token-task/issues"
+  },
+  "homepage": "https://github.com/valentin43digital/token-task#readme"
 }
