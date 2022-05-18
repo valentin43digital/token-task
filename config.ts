@@ -1,6 +1,6 @@
 const configts = {
     CONTRACT_ADDRESS: "0x3f3f02c98Da2487DE0ecaE0d9C9af9dCe8D6d2ce",
-    totalSupply: "1000000.0",
+    totalSupply: "10000000.0",
     name: "Valentin Token",
     symbol: "VLNT",
     decimals: "18",
